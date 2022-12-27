@@ -146,3 +146,26 @@ kubectl port-forward svc/istio-ingressgateway -n istio-system 8080:80
 ```
 
 Login using `user@example.com` and the default password is `12341234`
+
+8. Checking out which is running 
+
+```pods
+kubectl get pods -n cert-manager
+kubectl get pods -n istio-system
+kubectl get pods -n auth
+kubectl get pods -n knative-eventing
+kubectl get pods -n knative-serving
+kubectl get pods -n kubeflow
+kubectl get pods -n kubeflow-user-example-com
+```
+
+### Seldon Add-On
+
+export CLUSTER_IP=127.0.0.1
+export SESSION=123
+
+curl -H "Content-Type: application/json" -H "Cookie: authservice_session=${SESSION}" \
+   -d '{"data": {"ndarray":[[1.0, 2.0, 5.0]]}}' \
+   http://127.0.0.1:8080/seldon/seldon/echo/api/v1.0/predictions
+
+{"data":{"names":["t:0","t:1","t:2"],"ndarray":[[1.0,2.0,5.0]]},"meta":{"metrics":[{"key":"mycounter","type":"COUNTER","value":1},{"key":"mygauge","type":"GAUGE","value":10
