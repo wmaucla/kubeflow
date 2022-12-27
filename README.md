@@ -18,7 +18,9 @@ minikube `v1.28.0`
 
 Kustomize has to be version 3.2.0
 
-`alias kustomize=<<CURR_DIR>>/kustomize_3.2.0_linux_amd64`
+Make sure to alias in directory where kustomize gets installed to
+
+`alias kustomize=$PWD/kustomize_3.2.0_linux_amd64`
 
 2. `git clone` the kubeflow manifests folder [here](https://github.com/kubeflow/manifests)
 
@@ -33,11 +35,21 @@ Kustomize has to be version 3.2.0
 # Try this set twice, if connection refused error
 kustomize build common/cert-manager/cert-manager/base | kubectl apply -f -
 kustomize build common/cert-manager/kubeflow-issuer/base | kubectl apply -f -
+```
 
+Wait for the above to be setup, will need a 
+
+`clusterissuer.cert-manager.io/kubeflow-self-signing-issuer created`
+
+
+```bash
 kustomize build common/istio-1-16/istio-crds/base | kubectl apply -f -
 kustomize build common/istio-1-16/istio-namespace/base | kubectl apply -f -
 kustomize build common/istio-1-16/istio-install/base | kubectl apply -f -
+```
 
+
+```bash
 kustomize build common/dex/overlays/istio | kubectl apply -f -
 
 kustomize build common/oidc-authservice/base | kubectl apply -f -
@@ -55,39 +67,82 @@ and check pods are all up and running first
 
 6. 
 
+Get Knative serving running
 ```bash
-# Might see some errors here
 kustomize build common/knative/knative-serving/overlays/gateways | kubectl apply -f -
 kustomize build common/istio-1-16/cluster-local-gateway/base | kubectl apply -f -
-
-kustomize build common/kubeflow-namespace/base | kubectl apply -f -
-
-kustomize build common/kubeflow-roles/base | kubectl apply -f -
-
-kustomize build common/istio-1-16/kubeflow-istio-resources/base | kubectl apply -f -
-
 ```
+
+Get kubeflow namespace and roles
+```bash
+kustomize build common/kubeflow-namespace/base | kubectl apply -f -
+kustomize build common/kubeflow-roles/base | kubectl apply -f -
+kustomize build common/istio-1-16/kubeflow-istio-resources/base | kubectl apply -f -
+```
+
+Get kubeflow pipelines installed
 
 ```bash
-# Errors here, try twice
 kustomize build apps/pipeline/upstream/env/cert-manager/platform-agnostic-multi-user | kubectl apply -f -
+```
 
+Get KServe
+```bash
+kustomize build contrib/kserve/kserve | kubectl apply -f -
+kustomize build contrib/kserve/models-web-app/overlays/kubeflow | kubectl apply -f -
+```
 
-kustomize build contrib/feast/feast/overlays/kubeflow | kubectl apply -f -
-
+Katlib (hyperparameter tuning)
+```bash
 kustomize build apps/katib/upstream/installs/katib-with-kubeflow | kubectl apply -f -
+```
+
+Central dashboard
+```
 kustomize build apps/centraldashboard/upstream/overlays/kserve | kubectl apply -f -
+```
 
+Others:
+```bash
 kustomize build apps/admission-webhook/upstream/overlays/cert-manager | kubectl apply -f -
+```
 
-
+Notebooks:
+```bash
 kustomize build apps/jupyter/notebook-controller/upstream/overlays/kubeflow | kubectl apply -f -
 kustomize build apps/jupyter/jupyter-web-app/upstream/overlays/istio | kubectl apply -f -
+```
 
+Profiles:
+```bash
+kustomize build apps/profiles/upstream/overlays/kubeflow | kubectl apply -f -
+```
+
+Volumes:
+```bash
 kustomize build apps/volumes-web-app/upstream/overlays/istio | kubectl apply -f -
+```
 
+Tensorboard
+```bash
 kustomize build apps/tensorboard/tensorboards-web-app/upstream/overlays/istio | kubectl apply -f -
-kustomize build apps/training-operator/upstream/overlays/kubeflow | kubectl apply -f -
+kustomize build apps/tensorboard/tensorboard-controller/upstream/overlays/kubeflow | kubectl apply -f -
+```
 
+Training operator
+```bash
+kustomize build apps/training-operator/upstream/overlays/kubeflow | kubectl apply -f -
+```
+
+Namespace
+```bash
 kustomize build common/user-namespace/base | kubectl apply -f -
 ```
+
+7. Port Forward and Login
+
+```bash
+kubectl port-forward svc/istio-ingressgateway -n istio-system 8080:80
+```
+
+Login using `user@example.com` and the default password is `12341234`
